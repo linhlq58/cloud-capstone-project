@@ -55,6 +55,18 @@ export async function deleteTodo(
   })
 }
 
+export async function removeUploadUrl(
+  idToken: string,
+  todoId: string
+): Promise<void> {
+  await Axios.patch(`${apiEndpoint}/todos/${todoId}/removeUrl`, JSON.stringify(''), {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${idToken}`
+    }
+  })
+}
+
 export async function getUploadUrl(
   idToken: string,
   todoId: string

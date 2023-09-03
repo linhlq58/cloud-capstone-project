@@ -14,7 +14,7 @@ import {
   Loader
 } from 'semantic-ui-react'
 
-import { createTodo, deleteTodo, getTodos, patchTodo } from '../api/todos-api'
+import { createTodo, deleteTodo, getTodos, patchTodo, removeUploadUrl } from '../api/todos-api'
 import Auth from '../auth/Auth'
 import { Todo } from '../types/Todo'
 
@@ -86,6 +86,20 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
       })
     } catch {
       alert('Todo deletion failed')
+    }
+  }
+
+  onTodoRemoveUploadUrl = async (pos: number) => {
+    try {
+      const todo = this.state.todos[pos]
+      await removeUploadUrl(this.props.auth.getIdToken(), todo.todoId)
+      this.setState({
+        todos: update(this.state.todos, {
+          [pos]: { attachmentUrl: { $set: '' } }
+        })
+      })
+    } catch {
+      alert('Remove URL failed')
     }
   }
 
@@ -193,7 +207,16 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
                 </Button>
               </Grid.Column>
               {todo.attachmentUrl && (
+                <Grid.Column width={10} verticalAlign="middle">
                 <Image src={todo.attachmentUrl} size="small" wrapped />
+                <Button
+                  icon
+                  color="red"
+                  onClick={() => this.onTodoRemoveUploadUrl(pos)}
+                >
+                  <Icon name="delete" />
+                </Button>
+              </Grid.Column>
               )}
               <Grid.Column width={16}>
                 <Divider />

@@ -7,6 +7,11 @@ import { TodoUpdate } from '../models/TodoUpdate';
 
 const XAWS = AWSXRay.captureAWS(AWS)
 
+const s3 = new XAWS.S3({
+    signatureVersion: 'v4'
+})
+
+const bucketName = process.env.ATTACHMENT_S3_BUCKET
 const logger = createLogger('TodosAccess')
 
 export class TodosAccess {
@@ -69,6 +74,8 @@ export class TodosAccess {
                 'userId': userId
             }
         }).promise()
+
+        await this.deleteTodoObject(todoId)
     }
 
     async updateTodoUrl(updatedTodo: any): Promise<TodoItem> {
@@ -88,9 +95,28 @@ export class TodosAccess {
         return updatedTodo 
     }
 
-    // async deleteTodoObject(todoId: string){
-    //     const params={Bucket: this.bucket, Key: todoId}
-    //     await this.S3.deleteObject(params).promise();
-      
-    //   }
+    async removeTodoUrl(updatedTodo: any): Promise<TodoItem> {
+        logger.info('Removing url with todoId: ' + updatedTodo.todoId)
+
+        await this.docClient.update({
+            TableName: this.todosTable,
+            Key: { 
+                todoId: updatedTodo.todoId, 
+                userId: updatedTodo.userId },
+            ExpressionAttributeNames: {"#A": "attachmentUrl"},
+            UpdateExpression: "remove #A",
+            ReturnValues: "UPDATED_NEW"
+        }).promise()
+
+        return updatedTodo
+    }
+
+    async deleteTodoObject(todoId: string){
+        const params = {
+            Bucket: bucketName, 
+            Key: todoId
+        }
+
+        await s3.deleteObject(params).promise();
+    }
 }

@@ -152,6 +152,25 @@ functions:
           - dynamodb:DeleteItem
           - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+      - Effect: Allow
+        Action:
+          - s3:DeleteObject
+        Resource: arn:aws:s3:::${self:provider.environment.ATTACHMENT_S3_BUCKET}/*
+
+  RemoveUploadUrl:
+    handler: src/lambda/http/removeUploadUrl.handler
+    events:
+      - http:
+          method: patch
+          path: todos/{todoId}/removeUrl
+          cors: true
+          authorizer: Auth
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
   GenerateUploadUrl:
     handler: src/lambda/http/generateUploadUrl.handler

@@ -76,3 +76,16 @@ export async function updateTodoUrl(
         attachmentUrl: attachmentUrl
     })
 }
+
+export async function removeTodoUrl(
+    todoId: string,
+    jwtToken: string
+  ) {
+  
+    const userId = parseUserId(jwtToken)
+  
+    return await todosAccess.removeTodoUrl({
+        todoId: todoId,
+        userId: userId
+    })
+}
